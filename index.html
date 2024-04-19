@@ -4,13 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>youtube API</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <!-- 1. ここの<div>タグがYoutubeの<iframe>に置き換わる。 -->
     <div id="player"></div>
+
+    <form>
+        <input type="search" id="ytSearch" value="TRiDENT" />
+        <button id="searchBtn">検索</button>
+    </form>
+
+    <select id="MovieId" class="ytMovie" name="ytMovie">
+        <option selected value="UP1zTP5qcfw">Trident × GOMES</option>
+        <option value="bjN-3EyXNyE">TRiDENT『Alive』MV</option>
+        <option value="We__CnrYa9U">TRiDENT『DISTINATION』</option>
+        <option value="I6ld4ecEp7s">TRiDENT『IMAGINATION』MV</option>
+        <option value="azQVVhMUz58">TRiDENT『Continue』MV【exガールズロックバンド革命】</option>
+    </select>
+
     <nav>
         <ul>
             <!-- 再生ボタン -->
@@ -18,16 +32,10 @@
             <li id="dostop">停止</li>
             <li id="dopause">一時停止</li>
             <li id="mute">ミュート</li>
-            <li id="do10sNext">10秒先へ</li>
             <li id="do10sPrev">10秒戻る</li>
+            <li id="do10sNext">10秒先へ</li>
         </ul>
-        <select id="MovieId" class="ytMovie" name="ytMovie">
-            <option selected value="UP1zTP5qcfw">Trident × GOMES</option>
-            <option value="bjN-3EyXNyE">TRiDENT『Alive』MV</option>
-            <option value="We__CnrYa9U">TRiDENT『DISTINATION』</option>
-            <option value="I6ld4ecEp7s">TRiDENT『IMAGINATION』MV</option>
-            <option value="azQVVhMUz58">TRiDENT『Continue』MV【exガールズロックバンド革命】</option>
-        </select>
+        <img src="./images/play.png" alt="再生" class="icon">
         <p>再生速度</p>
         <form id="doSpeed">
             <input type="radio" id="mslow" name="speed" value="0.25" />
@@ -47,6 +55,8 @@
     </nav>
 
     <script>
+        const icon = document.querySelector(".icon");
+
         // 2. 変数tagにscriptタグを作って入れる。Element=要素、Attrubute=属性
         var tag = document.createElement("script");
 
@@ -103,6 +113,7 @@
         let doplayBtn = document.querySelector("#doplay");
         doplayBtn.addEventListener("click", function () {
             playTheVideo(); //関数名に変更
+            icon.setAttribute("src", "./images/play.png");
         });
 
         //停止関数
@@ -113,6 +124,7 @@
         let dostopBtn = document.querySelector("#dostop");
         dostopBtn.addEventListener("click", function () {
             stopVideo();
+            icon.setAttribute("src", "./images/stop.jpeg");
         });
 
         //一時停止関数
@@ -124,6 +136,7 @@
         let dopauseBtn = document.querySelector("#dopause");
         dopauseBtn.addEventListener("click", function () {
             pauseTheVideo();
+            icon.setAttribute("src", "./images/pause.png");
         });
 
         //ミュート関数
@@ -143,8 +156,10 @@
             onMute();
             if (onMuteBtn.innerText === "ミュート") {
                 onMuteBtn.innerText = "ミュート解除";
+                icon.setAttribute("src", "./images/mute.png");
             } else {
                 onMuteBtn.innerText = "ミュート";
+                icon.setAttribute("src", "./images/volume.png");
             }
         });
 
@@ -164,12 +179,14 @@
         let onePrevBtn = document.querySelector("#do10sPrev");
         onePrevBtn.addEventListener("click", function () {
             onePrev();
+            icon.setAttribute("src", "./images/10sPrev.jpeg");
         });
 
         //10秒後へイベント
         let oneNextBtn = document.querySelector("#do10sNext");
         oneNextBtn.addEventListener("click", function () {
             oneNext();
+            icon.setAttribute("src", "./images/10sNext.jpeg");
         });
 
         //ボリューム関数
@@ -210,6 +227,40 @@
             playSpeed(parseFloat(speedBtn.speed.value));
         });
 
+        // 検索して値を取得する関数の定義
+        function ytSearch(val) {
+            const key = "AIzaSyBIitcUwixp8CY9LGV_V7Boy5Tk9jQVZEs"; //自分のキーに書き換えます。
+            const num = 10;
+            const part = "snippet";
+            const type = "video";
+            const query = val;
+            fetch(
+                `https://www.googleapis.com/youtube/v3/search?type=${type}&part=${part}&maxResults=${num}&key=${key}&q=${query}&playsinline=1`,
+            )
+                .then((data) => data.json())
+                .then((obj) => {
+                    movieid.innerHTML = "";
+                    for (let i in obj["items"]) {
+                        //各videoIdとタイトルを取得
+                        const ytId = obj["items"][i]["id"]["videoId"];
+                        const ytTitle = obj["items"][i]["snippet"]["title"];
+                        //optionを作成して、videoIdとtitleを所定の場所に設置し、要素を追加していく。
+                        const optionTag = document.createElement('option');
+                        optionTag.textContent = ytTitle;
+                        optionTag.setAttribute('value', ytId);
+                        movieid.appendChild(optionTag);
+                    }
+                });
+        }
+
+        // 検索ボタンイベント
+        const ytSearchBtn = document.querySelector("#searchBtn");
+        ytSearchBtn.addEventListener("click", function (e) {
+            const ytSearchVal = document.querySelector("#ytSearch").value;
+            // console.log(ytSearchVal);
+            e.preventDefault(); //検索ボタンの送信をストップしておく。
+            ytSearch(ytSearchVal);
+        });
     </script>
 
 </body>
